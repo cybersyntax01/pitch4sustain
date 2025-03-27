@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "DM Sans", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+        }
+
+        .container {
+            padding-top: 2rem;
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid #333;
+            backdrop-filter: blur(10px);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: rgba(0, 0, 0, 0.3) !important;
+            border-bottom: 1px solid #333;
+        }
+
+        .product-card {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-color: #4CAF50;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #444;
+        }
+
+        .card-title {
+            color: #4CAF50;
+        }
+
+        .card-text {
+            color: #e0e0e0;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+        }
+
+        .add-product-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .add-product-btn:hover {
+            transform: scale(1.1);
+            background: #45a049;
+        }
+
+        .modal-content {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 15px;
+            color: #e0e0e0;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #444;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #444;
+        }
+
+        .form-control {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid #444;
+            color: #e0e0e0;
+        }
+
+        .form-control:focus {
+            background: rgba(40, 40, 40, 0.9);
+            border-color: #4CAF50;
+            color: #e0e0e0;
+            box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+        }
+
+        .form-label {
+            color: #e0e0e0;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+            border-color: #45a049;
+        }
+
+        .btn-secondary {
+            background: #666;
+            border-color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+            border-color: #555;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            border-color: #45a049;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .grade-badge {
+            position: absolute;
+            top: 10px;
+            right: 120px;
+            z-index: 1;
+            background: #17a2b8;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Seller Dashboard</h1>
+        
+        <div class="row">
+            <!-- Pending Products -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Pending Products</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="pending-products">
+                            {% for product in products.pending %}
+                            <div class="card product-card">
+                                {% if product.image %}
+                                <img src="{{ url_for('static', filename=product.image) }}" class="product-image" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                                {% else %}
+                                <img src="https://via.placeholder.com/400x200?text=No+Image" class="product-image" alt="No Image">
+                                {% endif %}
+                                <div class="card-body">
+                                    <span class="badge bg-warning status-badge">Pending Approval</span>
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">{{ product.description }}</p>
+                                    <p class="card-text"><strong>Price: ₹{{ product.price }}</strong></p>
+                                    <button class="btn btn-danger btn-sm delete-btn" data-product-id="{{ product.id }}">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approved Products -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Approved Products</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="approved-products">
+                            {% for product in products.approved %}
+                            <div class="card product-card">
+                                {% if product.image %}
+                                <img src="{{ url_for('static', filename=product.image) }}" class="product-image" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                                {% else %}
+                                <img src="https://via.placeholder.com/400x200?text=No+Image" class="product-image" alt="No Image">
+                                {% endif %}
+                                <div class="card-body">
+                                    <span class="badge bg-success status-badge">Approved</span>
+                                    {% if product.grade %}
+                                    <span class="badge bg-info grade-badge">Grade {{ product.grade }}</span>
+                                    {% endif %}
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">{{ product.description }}</p>
+                                    <p class="card-text"><strong>Price: ₹{{ product.price }}</strong></p>
+                                    <button class="btn btn-danger btn-sm delete-btn" data-product-id="{{ product.id }}">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rejected Products -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Rejected Products</h5>
+                </div>
+                <div class="card-body">
+                    <div id="rejected-products">
+                        {% for product in products.rejected %}
+                        <div class="card product-card">
+                            {% if product.image %}
+                            <img src="{{ url_for('static', filename=product.image) }}" class="product-image" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                            {% else %}
+                            <img src="https://via.placeholder.com/400x200?text=No+Image" class="product-image" alt="No Image">
+                            {% endif %}
+                            <div class="card-body">
+                                <span class="badge bg-danger status-badge">Rejected</span>
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">{{ product.description }}</p>
+                                <p class="card-text"><strong>Price:</strong> ${{ product.price }}</p>
+                                <div class="action-buttons">
+                                    <button class="btn btn-warning btn-sm" onclick="reapplyProduct({{ product.id }})">Reapply</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteRejectedProduct({{ product.id }})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Button -->
+    <div class="add-product-btn" data-bs-toggle="modal" data-bs-target="#addProductModal">
+        <i class="fas fa-plus fa-2x"></i>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addProductForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Product Name</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="number" class="form-control" name="price" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Product Image</label>
+                            <input type="file" class="form-control" name="image" accept="image/*" required>
+                            <img id="imagePreview" class="image-preview" alt="Preview">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveProduct">Save Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Image preview
+        document.querySelector('input[name="image"]').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Add Product
+        document.getElementById('saveProduct').addEventListener('click', function() {
+            const form = document.getElementById('addProductForm');
+            const formData = new FormData(form);
+
+            fetch('/add_product', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        });
+
+        // Delete Product
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this product?')) {
+                    const productId = this.dataset.productId;
+                    fetch(`/delete_product/${productId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        });
+
+        function deleteRejectedProduct(productId) {
+            if (confirm('Are you sure you want to delete this rejected product?')) {
+                fetch(`/delete_product/${productId}?source=rejected`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error deleting product');
+                    }
+                });
+            }
+        }
+
+        function reapplyProduct(productId) {
+            if (confirm('Are you sure you want to reapply this product for approval?')) {
+                fetch(`/reapply_product/${productId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error reapplying product');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
